@@ -215,7 +215,7 @@ amqp.connect('amqp://localhost', (error0, connection) => {
 						<section>
 							<p class="align-justify">Let's try something different. Let's rename receive.js file and open it as <span class="emphasized">worker.js</span> in two separated terminals. And let's run send.js as <span class="emphasized">new_task.js</span> couple of times, but with altered <span class="emphasized">message</span> value.</p>
 							<div class="image-container-transparent">
-								<div class="image-wrapper">
+								<div class="scaled1 image-wrapper">
 									<img src="./dist/assets/tutorial2/terminal_workerjs.png" alt="Terminal1">
 									<img src="./dist/assets/tutorial2/terminal_workerjs.png" alt="Terminal2">
 								</div>
@@ -238,11 +238,11 @@ const message = "Task 4";</code>
 						<section>
 							<p class="align-justify">We can see that our scripts work, but in a surprising way. We may see that queue sent messages to both consumers in certain order. <span class="emphasized">Task 1</span> and <span class="emphasized">Task 3</span> to instance 1 and <span class="emphasized">Task 2</span> and <span class="emphasized">Task 4</span> to instance 2. There are only two instances so it made a loop and got back to the instance 1.</p>
 							<div class="image-container-transparent">
-								<div class="image-wrapper">
+								<div class="scaled1 image-wrapper">
 									<img src="./dist/assets/tutorial2/terminal_worker1_after.png" alt="First terminal">
 									<img src="./dist/assets/tutorial2/terminal_worker2_after.png" alt="Second terminal">
 								</div>
-								<div class="image-wrapper">
+								<div class="scaled1 image-wrapper">
 									<img src="./dist/assets/tutorial2/terminal_new_taskjs.png" alt="Tasks">
 								</div>
 						</div>
@@ -252,36 +252,28 @@ const message = "Task 4";</code>
 						<section>
 							<p class="align-justify">Now run consumers again - but now with set <span class="emphasized">prefetch</span>. Below <span>new_task.js</span> file.</p>
 								<pre>
-									<code>//require library
-const amqp = require('amqplib/callback_api');
+									<code>const amqp = require('amqplib/callback_api');
 										
-//make connection with rabbitMQ
 amqp.connect('amqp://localhost', (connErr, connection) => {
   if (connErr) throw connErr;
 										
-  //create channel
   connection.createChannel((channelErr, channel) => {
     if (channelErr) throw channelErr;
 										
-    //declare queue name
     const queue = 'task_queue';
 										
-    //declare message
     const message = process.argv.slice(2).join(' ') || 'Hello World!';
 										
-    //assert queue
     channel.assertQueue(queue, {
 	    durable: true,
     });
 										
-    //send message buffer to queue
     channel.sendToQueue(queue, Buffer.from(message), {
 	    persistent: true,
     });
     console.log(` [x] Sent ${message}`);
   });
 										
-  //exit app
   setTimeout(() => {
    connection.close();
    process.exit(0);
@@ -292,45 +284,35 @@ amqp.connect('amqp://localhost', (connErr, connection) => {
 						<section>
 							<p class="align-center">And code for the consumer, <span class="emphasized">worker.js</span></p>
 							<pre>
-								<code>//require library
-const amqp = require('amqplib/callback_api');
+								<code>const amqp = require('amqplib/callback_api');
 									
-//make connection with rabbitMQ
 amqp.connect('amqp://localhost', (connErr, connection) => {
   if (connErr) throw connErr;
 									
-  //create channel
   connection.createChannel((channelErr, channel) => {
     if (channelErr) throw channelErr;
 	  							
-    //declare queue name
     const queue = 'task_queue';
 	  							
-    //declare prefetch value
     const pref = Number(process.argv[2]) || 1;
 	  							
-    //assert queue
     channel.assertQueue(queue, {
     	durable: true,
     });
 	  							
-    //set prefetch
     channel.prefetch(pref);
 	  							
     console.log(` [*] Waiting for messages in ${queue}. To exit press CTRL+C`);
 	  							
-    //listen for messages
     channel.consume(
     	queue,
         (message) => {
-          //set delay dependent by dots in argv
           const secs = message.content.toString().split('.').length - 1;
 	  	
   	  console.log(' [x] Received %s', message.content.toString());
 	  setTimeout(() => {
 	    console.log(' [x] Done');
 	  							
-	    // confirm that if we handled message
 	    channel.ack(message);
 	  }, secs * 1000);
 	},
@@ -343,7 +325,7 @@ amqp.connect('amqp://localhost', (connErr, connection) => {
 						</section>
 						<section>
 							<p>We'll send 4 tasks, but with <span class="emphasized">.</span> to make fake delay before handling task is completed</p>
-							<div class="image-container-transparent">
+							<div class="scaled1 image-container-transparent">
 								<div class="image-wrapper">
 									<img src="./dist/assets/tutorial3/terminal_worker1_before.png" alt="Terminal1">
 									<img src="./dist/assets/tutorial3/terminal_worker2_before.png" alt="Terminal2">
@@ -355,7 +337,7 @@ amqp.connect('amqp://localhost', (connErr, connection) => {
 						</section>
 						<section>
 							<p class="align-justify">Instance 1 has prefetch set to 1, and instance 2 has prefetch equal to 2. So instace 1 can receive only one message from queue before handling is done, and instance 2 can receive two messages from the queue.</p>
-							<div class="image-container-transparent">
+							<div class="scaled1 image-container-transparent">
 								<div class="image-wrapper">
 									<img src="./dist/assets/tutorial3/terminal_worker1_after.png" alt="Terminal1">
 								</div>
@@ -369,19 +351,15 @@ amqp.connect('amqp://localhost', (connErr, connection) => {
 						<section>
 						<p class="align-justify">Now, let's add some changes to the code of the producer - <span class="emphasized">emit_log.js</span> file.</p>
 						<pre>
-							<code>(...)
-//declare message
+							<code data-line-numbers="2-12">(...)
 const message = process.argv.slice(2).join(' ') || 'Hello World!';
 
-//declare exchange name
 const exchange = 'logs';
 
-//assert exchange with a type of fanout - it will broadcast the message to all of the listeners
 channel.assertExchange(exchange, 'fanout', {
   durable: false,
 });
 						
-//send message buffer to the exchange, empty string means we aren't specifying any particular queue
 channel.publish(exchange, '', Buffer.from(message));
 						
 console.log(` [x] Sent ${message}`);
@@ -391,16 +369,13 @@ console.log(` [x] Sent ${message}`);
 						<section>
 							<p class="align-center">Time for the listener, <span class="emphasized">receive_logs.js</span> file.</p>
 							<pre>
-								<code data-line-numbers="2-37">(...)
-//declare exchange name
+								<code data-line-numbers="2-32">(...)
 const exchange = 'logs';
 							
-//assert exchange with type fanout
 channel.assertExchange(exchange, 'fanout', {
   durable: false,
 });
 							
-//assert queue exclusive with autogenerated name
 channel.assertQueue(
   '',
   {
@@ -413,10 +388,8 @@ channel.assertQueue(
       ` [*] Waiting for messages in ${q.queue}. To exit press CTRL+C`
     );
 							
-    //bind queue
     channel.bindQueue(q.queue, exchange, '');
 							
-    //listen for messages
     channel.consume(
       q.queue,
       (message) => {
@@ -433,14 +406,11 @@ channel.assertQueue(
 						</section>
 						<section>
 							<p class="align-center">Notice the autogenerated queues' names.</p>
-							<div class="image-container-transparent">
+							<div class="scaled2 image-container-transparent">
 								<div class="image-wrapper">
-									<img class="scaled1" src="./dist/assets/tutorial4/terminal_receive_logsjs_before.png" alt="Terminal1">
-									<img class="scaled1" src="./dist/assets/tutorial4/terminal_receive_logsjs_before2.png" alt="Terminal2">
-								</div>
-								<div class="image-wrapper">
+									<img src="./dist/assets/tutorial4/terminal_receive_logsjs_before.png" alt="Terminal1">
 									<img src="./dist/assets/tutorial4/terminal_emit_log.png" alt="Terminal3">
-								</div>
+									<img src="./dist/assets/tutorial4/terminal_receive_logsjs_before2.png" alt="Terminal2">
 							</div>
 						</section>
 						<section>
@@ -450,7 +420,7 @@ channel.assertQueue(
 						</section>
 						<section>
 							<p class="align-center">The message is sent to every consumer of this exchange.</p>
-							<div class="image-container-transparent">
+							<div class="scaled2 image-container-transparent">
 								<div class="image-wrapper">
 									<img src="./dist/assets/tutorial4/terminal_receive_logsjs_after.png" alt="Terminal1">
 								</div>
