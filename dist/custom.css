@@ -1,0 +1,52 @@
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.align-justify {
+  text-align: justify;
+}
+
+.source {
+  font-size: 1rem;
+  color: #c1c1c1;
+}
+
+.asBackgroundFiller {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.command-block {
+  display: inline-block;
+  margin: 10px 0;
+  padding: 15px 20px;
+  border: 2px solid #fff;
+}
+
+.emphasized {
+  font-weight: 900;
+}
+
+.reveal img.image-decorator {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.image-wrapper {
+  margin: 30px auto;
+  width: 50%;
+  background-color: #fff;
+}
+
+.images-container {
+  display: flex;
+}

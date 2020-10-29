@@ -4,10 +4,11 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
-
+		<title>RabbitMQ & JS</title>
+		<link rel="icon" type="/image/vnd.microsoft.icon" href="https://rabbitmq.com/favicon.ico">
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/custom.css">
 		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
 
 		<!-- Theme used for syntax highlighted code -->
@@ -16,9 +17,210 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
+				<section><img data-src="https://www.rabbitmq.com/img/logo-rabbitmq.svg"></section>
+				<section>
+					<section>
+						<p class="align-justify"><span class="emphasized">RabbitMQ</span> is the most widely deployed open source message broker: it accepts and forwards messages. You can think about it as a post office: when you put the mail that you want posting in a post box, you can be sure that Mr. or Ms. Mailperson will eventually deliver the mail to your recipient. In this analogy, RabbitMQ is a post box, a post office and a postman.</p>
+					</section>
+					<section>
+						<p class="align-justify">The major difference between RabbitMQ and the post office is that it doesn't deal with paper, instead it accepts, stores and forwards binary blobs of data ‒ messages.</p>
+						<p class="align-right source">Source: https://www.rabbitmq.com/tutorials/tutorial-one-javascript.htm</p>
+					</section>
+					</section>
+						<section>
+						<section> 
+							<p class="align-justify">With tens of thousands of users, RabbitMQ is one of the most popular open source message brokers. RabbitMQ is used worldwide at small startups and large enterprises.
+							</p>
+						</section>
+						<section>
+							<p class="align-justify">RabbitMQ is lightweight and easy to deploy on premises and in the cloud. It supports multiple messaging protocols. RabbitMQ can be deployed in distributed and federated configurations to meet high-scale, high-availability requirements.</p>
+						</section>
+						<section>
+							<p class="align-justify">RabbitMQ runs on many operating systems and cloud environments, and provides a wide range of developer tools for most popular languages.</p>
+							<p class="align-left source">Source: https://www.rabbitmq.com/#features</p>
+						</section>
+						<img class="asBackgroundFiller" src="https://www.rabbitmq.com/img/home/banner/webinar/RabbitMQ-Hero-queues-desktop.svg" alt="RabbitMQ">
+					</section>
+					<section>
+						<section>
+							<h1>RabbitMQ and Node.js</h1>
+						</section>
+						<section>
+							<p class="align-justify">We can make connections between NodeJS apps and RabbitMQ using AMQP (Advanced Message Queuing Protocol).</p>
+							<span class="command-block">npm install amqplib</span>
+							<p class="align-justify">In case NodeJS we can make AMQP client with suitable libraries, e.g. <span class="emphasized">amqplib</span>.</p>
+							<p class="align-right source">Source: https://www.npmjs.com/package/amqplib</p>
+						</section>
+					</section>
+					<section>
+						<section>
+							<div>
+								<h1>Jargon</h1>
+								<img class="image-decorator" src="https://rabbitmq.com/favicon.ico" alt="RabbitMQ">
+							</div>
+							<p class="align-justify"><span class="emphasized">Producing</span> means nothing more than sending. A program that sends messages is a <span class="emphasized">producer</span>.</p>
+						</section>
+						<section>
+							<p class="align-justify">A <span class="emphasized">queue</span> is the name for a post box which lives inside RabbitMQ. Although messages flow through RabbitMQ and your applications, they can only be stored inside a queue. A queue is only bound by the host's memory & disk limits, it's essentially a large message buffer. Many producers can send messages that go to one queue, and many consumers can try to receive data from one queue.</p>
+						</section>
+						<section>
+							<span><span class="emphasized">Basic producer => queue => consumer</span> flow</span>
+							<div class="image-wrapper">
+								<img src="https://www.rabbitmq.com/img/tutorials/python-one.png" alt="Producer>queue>consumer model">
+							</div>
+						</section>
+						<section>
+							<p class="align-justify"><span class="emphasized">Consuming</span> has a similar meaning to receiving. A consumer is a program that mostly waits to receive messages.</p>
+							<p class="source align-right">Source: https://www.rabbitmq.com/tutorials/tutorial-one-javascript.html</p>
+						</section>
+					</section>
+					<section>
+						<section class="align-justify">
+							<p class="align-center"><span class="emphasized">The "Hello World" Project</span></p>
+							<p>In this simple project we need 2 files: <span class="emphasized">send.js</span> and <span class="emphasized">receive.js</span>.</p>
+							<p>As we know from the previous slide send.js will be producer and receive.js will be consumer.</p>
+							<p>Let’s make producer (send.js) first.</p>
+						</section>
+						<section>
+							<p class="align-justify">At the very beginning we need require library and connect to the RabbitMQ server.</p>
+							<pre>
+								<code data-trim data-noescape>
+									const amqp = require('amqplib/callback_api');
+
+									amqp.connect('amqp://localhost', (error0, connection) => {
+									  if (error0) {
+									    throw error0;
+									  };
+									});
+								</code>
+							</pre>
+						</section>
+						<section>
+							<p class="align-justify">Now we'll create a channel, which is where most of the API for getting things done resides, declare a queue to send to and we should be able to publish a message.</p>
+							<pre>
+								<code data-line-numbers="7-18">const amqp = require('amqplib/callback_api');
+
+amqp.connect('amqp://localhost', (error0, connection) => {
+  if (error0) {
+    throw error0;
+  }
+  connection.createChannel((error1, channel) => {
+    if (error1) {
+      throw error1;
+    }
+    const queue = 'hello';
+    const message = "It's working!";
+    channel.assertQueue(queue, {
+      durable: false,
+    });
+    channel.sendToQueue(queue, Buffer.from(message));
+    console.log(' [x] Sent %s', message);
+  });
+});
+								</code>
+						</pre>
+						</section>
+						<section>
+							<p class="align-justify">The queue will only be created if it doesn't exist already. The message content is a byte array, so we can encode whatever we wish. To finish our work with the first file we should close the connection and exit.</p>
+							<pre>
+								<code data-line-numbers="7-10">(...)
+  connection.createChannel((error1, channel) => {
+    (...)
+    channel.sendToQueue(queue, Buffer.from(message));
+    console.log(' [x] Sent %s', message);
+  });
+  setTimeout(() => {
+    connection.close();
+    process.exit(0);
+  }, 500);
+});
+								</code>
+						</pre>
+						</section>
+					</section>
+					<section>
+						<section>
+							<p class="align-justify">Now, the <span class="emphasized">receive.js</span>. Since it's a consumer, it'll be kept running to listen for the messages and print them out.</p>
+						</section>
+						<section>
+							<p class="align-justify">The file will need the same require as the prvious one. It will also need to establish the connection, the channel and declare the queue to consume from it.</p>
+							<pre>
+								<code>const amqp = require('amqplib/callback_api');
+
+amqp.connect('amqp://localhost', (error0, connection) => {
+  if (error0) {
+    throw error0;
+  }
+  connection.createChannel((error1, channel) => {
+    if (error1) {
+      throw error1;
+    }
+    const queue = 'hello';
+    channel.assertQueue(queue, {
+      durable: false,
+    });
+  });
+});
+								</code>
+							</pre>
+						</section>
+						<section>
+							<p class="align-justify"> Since the server will push us messages asynchronously, we provide a callback that will be executed when messages are pushed to our consumer.</p>
+							<pre>
+								<code data-line-numbers="7-16">(...)
+  connection.createChannel((error1, channel) => {
+    (...)
+    channel.assertQueue(queue, {
+      durable: false,
+    });
+    console.log('[*] Waiting for messages in %s. To exit press CTRL+C', queue);
+    channel.consume(
+      queue,
+      (message) => {
+        console.log('[x] Received %s', message.content.toString());
+      },
+      {
+        noAck: true,
+      }
+    );
+  });
+});
+								</code>
+							</pre>
+						</section>
+					</section>
+					<section>
+						<section>
+						<p class="align-justify">That's it. Assuming that RabbitMQ is installed nad running on local host on the standard port(5672), we are ready now to test our small project.</p>
+						</section>
+						<section>
+							<p class="align-justify">Let's open the <span class="emphasized">receive.js</span> file in two separated terminals and leave them listening for the messages. And let's run <span class="emphasized">send.js</span> file couple of times, but with altered <span class="emphasized">message</span> value.</p>
+							<div class="images-container">
+								<div class="image-wrapper">
+									<img src="./dist/assets/tutorial1/terminal-one-before.png" alt="First terminal">
+									<img src="./dist/assets/tutorial1/terminal-two-before.png" alt="Second terminal">
+								</div>
+								<div class="image-wrapper">
+									<img src="./dist/assets/tutorial1/first-message.png" alt="Message">
+									<img src="./dist/assets/tutorial1/second-message.png" alt="Message">
+									<img src="./dist/assets/tutorial1/third-message.png" alt="Message">
+									<img src="./dist/assets/tutorial1/fourth-message.png" alt="Message">
+								</div>
+							</div>
+						</section>
+						<section>
+							<p class="align-justify">We can see that our scripts work, but in a surprising way. We may see that queue sent messages to both consumers in certain order. <span class="emphasized">Hello 1</span> and <span class="emphasized">Hello 3</span> to instance 1 and <span class="emphasized">Hello 2</span> and <span class="emphasized">Hello 4</span> to instance 2. There are only two instances so it made a loop and got back to the instance 1.</p>
+							<div class="images-container">
+								<div class="image-wrapper">
+									<img src="./dist/assets/tutorial1/terminal-one-after.png" alt="First terminal">
+								</div>
+								<div class="image-wrapper">
+									<img src="./dist/assets/tutorial1/terminal-two-after.png" alt="Second terminal">
+								</div>
+						</div>
+						</section>
+					</section>
+					</div>
 		</div>
 
 		<script src="dist/reveal.js"></script>
